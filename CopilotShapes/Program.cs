@@ -3,20 +3,54 @@ Console.BackgroundColor = ConsoleColor.Black;
 Console.CursorVisible = false;
 Console.Clear();
 
-// Draw a cross (X) with width 20 and height 10
-Line[] lines = [
-    new Line(new Point2D(0, 0), new Point2D(20, 10), new Color(ConsoleColor.White, ConsoleColor.Black, 'X')),
-    new Line(new Point2D(0, 10), new Point2D(20, 0), new Color(ConsoleColor.White, ConsoleColor.Black, 'X'))
-];
+// // Draw a cross (X) with width 20 and height 10
+// Shape[] shapes = [
+//     new Line(new Point2D(0, 0), new Point2D(20, 10), new Color(ConsoleColor.White, ConsoleColor.Black, 'X')),
+//     new Line(new Point2D(0, 10), new Point2D(20, 0), new Color(ConsoleColor.White, ConsoleColor.Black, 'X')),
+//     new Rectangle(new Point2D(5, 5), new Point2D(15, 15), new Color(ConsoleColor.Red, ConsoleColor.Black, 'R')),
+//     new Polygon(new Point2D[] { new Point2D(30, 30), new Point2D(40, 30), new Point2D(35, 40) }, false, new Color(ConsoleColor.Green, ConsoleColor.Black, 'P')),
+//     new Triangle(new Point2D(50, 50), new Point2D(60, 50), new Point2D(55, 60), new Color(ConsoleColor.Blue, ConsoleColor.Black, 'T')),
+//     new Ellipse(new Point2D(70, 70), 10, 5, 100, new Color(ConsoleColor.Yellow, ConsoleColor.Black, 'E'))
+// ];
 
-// Draw lines
-foreach (var line in lines)
+// // Draw lines
+// foreach (var shape in shapes)
+// {
+//     shape.Draw();
+// } 
+
+// // Wait for key press
+// Console.ReadKey();
+
+// Clear screen (black)
+Console.BackgroundColor = ConsoleColor.Black;
+Console.CursorVisible = false;
+
+// Create an ellipse
+Ellipse ellipse = new Ellipse(new Point2D(0, 15), 10, 5, 100, new Color(ConsoleColor.White, ConsoleColor.Black, 'E'));
+
+// Animation loop
+while (true)
 {
-    line.Draw();
+    // Clear the console
+    Console.Clear();
+
+    // Draw the ellipse
+    ellipse.Draw();
+
+    // Delay for a small period of time
+    System.Threading.Thread.Sleep(100);
+
+    // Move the ellipse to the right
+    ellipse = new Ellipse(new Point2D(ellipse.Center.X + 1, ellipse.Center.Y), 10, 10, 100, new Color(ConsoleColor.White, ConsoleColor.Black, 'E'));
+
+    // If the ellipse reaches the right end of the console, reset its position
+    if (ellipse.Center.X >= 100)
+    {
+        ellipse = new Ellipse(new Point2D(0, ellipse.Center.Y), 10, 10, 100, new Color(ConsoleColor.White, ConsoleColor.Black, 'E'));
+    }
 }
 
-// Wait for key press
-Console.ReadKey();
 Console.CursorVisible = true;
 
 record struct Point2D(int X, int Y);
@@ -77,6 +111,8 @@ class Line(Point2D start, Point2D end, Color stroke) : Shape(stroke)
         Console.ForegroundColor = Stroke.Foreground;
         foreach (var point in Points)
         {
+            if (point.X < 0) { continue; }
+            if (point.Y < 0) { continue; }
             Console.SetCursorPosition(point.X, point.Y);
             Console.Write(Stroke.Symbol);
         }
@@ -133,6 +169,8 @@ class Ellipse(Point2D center, int radiusX, int radiusY, int tessalation, Color s
 {
     private Polygon? approximatedEllipse;
 
+    public Point2D Center { get; } = center;
+
     public override void Draw()
     {
         if (approximatedEllipse == null)
@@ -142,8 +180,8 @@ class Ellipse(Point2D center, int radiusX, int radiusY, int tessalation, Color s
             double angleStep = 2 * Math.PI / tessalation;
             for (int i = 0; i < tessalation; i++)
             {
-                double x = center.X + radiusX * Math.Cos(angle);
-                double y = center.Y + radiusY * Math.Sin(angle);
+                double x = Center.X + radiusX * Math.Cos(angle);
+                double y = Center.Y + radiusY * Math.Sin(angle);
                 points.Add(new Point2D((int)Math.Round(x), (int)Math.Round(y)));
                 angle += angleStep;
             }

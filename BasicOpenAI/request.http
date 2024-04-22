@@ -1,0 +1,17 @@
+POST https://oai-rstropek-sweden.openai.azure.com/openai/deployments/chatgpt-4-1106-preview/chat/completions?api-version=2024-03-01-preview
+Content-Type: application/json
+api-key: ...
+
+{
+    "model": "chatgpt-4-1106-preview",
+    "messages": [
+        {
+        "role": "system",
+        "content": "You are a helpful assistant."
+        },
+        {
+        "role": "user",
+        "content": "Hello!"
+        }
+    ]
+}
