@@ -1,30 +1,37 @@
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-// using System.Text.RegularExpressions;
+using Azure.AI.OpenAI;
+using BasicOpenAIChatService;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.ConfigureHttpJsonOptions(option =>
-{
-    option.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine([
-        DtoSerializerContext.Default,
-        // ...
-    ]);
-});
+builder.Services.AddCors();
+builder.Services.AddSingleton(new OpenAIClient("..."));
+builder.Services.AddSingleton<ChatManager>();
+
 var app = builder.Build();
+app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.MapGet("/", () => "Hello World!");
-app.MapGet("/person", () => new Person("John", 30));
+
+app.MapPost("/chat/sessions", (ChatManager chatManager) =>
+{
+    var session = chatManager.CreateSession();
+    return Results.Created((string?)null, new { SessionId = session.Id });
+});
+
+app.MapPost("/chat/sessions/{sessionId}/messages", (ChatManager chatManager, Guid sessionId, AddMessageRequest msg) =>
+{
+    var session = chatManager.GetSession(sessionId);
+    if (session == null) { return Results.NotFound(); }
+    session.AddUserMessage(msg.Message);
+    return Results.Created();
+});
+
+app.MapPost("/chat/sessions/{sessionId}/run", async (ChatManager chatManager, Guid sessionId) =>
+{
+    var session = chatManager.GetSession(sessionId);
+    if (session == null) { return Results.NotFound(); }
+    return Results.Ok(await session.Run());
+});
 
 app.Run();
 
-// static partial class RegExDemo
-// {
-//     [GeneratedRegex("abc|def", RegexOptions.IgnoreCase, "en-US")]
-//     private static partial Regex AbcOrDefGeneratedRegex();
-// }
-
-record Person(string Name, int Age);
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(Person))]
-partial class DtoSerializerContext : JsonSerializerContext { }
+record AddMessageRequest(string Message);

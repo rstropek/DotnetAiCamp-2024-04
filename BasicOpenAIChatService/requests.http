@@ -1,4 +1,17 @@
-GET http://localhost:5000/
+GET http://localhost:5194/
 
 ###
-GET http://localhost:5000/person
+# @name createSession
+POST http://localhost:5194/chat/sessions
+
+###
+POST http://localhost:5194/chat/sessions/{{createSession.response.body.sessionId}}/messages
+Content-Type: application/json
+
+{
+    "message": "Shut up, I am working!"
+}
+
+###
+POST http://localhost:5194/chat/sessions/{{createSession.response.body.sessionId}}/run
+
