@@ -1,0 +1,7 @@
+{
+    "nugetpackagemanagergui.packageSources": [
+        {
+            "preRelease": true
+        }
+    ]
+}
